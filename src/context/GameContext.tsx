@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import confetti from 'canvas-confetti';
 import type { Quest, QuestStatus, TeamMember, Stage } from '../types/game';
@@ -51,6 +51,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState<boolean>(true);
   const [dbStatus, setDbStatus] = useState<'connected' | 'offline'>('offline');
 
+  // Synchronization refs to avoid infinite loop when syncing database changes in realtime
+  const lastSyncedRef = useRef<string>('');
+  const isIncomingUpdateRef = useRef<boolean>(false);
+
   // Sync state from Supabase on component mount
   useEffect(() => {
     const fetchInitialState = async () => {
@@ -63,6 +67,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (error || !data) {
           throw new Error(error?.message || 'Không tìm thấy dữ liệu.');
+        }
+
+        if (data.updated_at) {
+          lastSyncedRef.current = data.updated_at;
         }
 
         if (Array.isArray(data.quests)) setQuests(data.quests);
@@ -136,6 +144,52 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  // Supabase Realtime Subscription to listen for cooperative updates
+  useEffect(() => {
+    if (dbStatus !== 'connected') return;
+
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'coop_quest_state',
+          filter: 'id=eq.default'
+        },
+        (payload: any) => {
+          const newData = payload.new;
+          if (newData && newData.updated_at && newData.updated_at !== lastSyncedRef.current) {
+            console.log('⚡ Đồng bộ thời gian thực từ cộng sự!', newData.updated_at);
+            lastSyncedRef.current = newData.updated_at;
+            isIncomingUpdateRef.current = true;
+
+            // Apply incoming updates to local states
+            if (Array.isArray(newData.quests)) setQuests(newData.quests);
+            if (newData.members) {
+              if (Array.isArray(newData.members)) {
+                setMembers(newData.members);
+              } else {
+                if (Array.isArray(newData.members.list)) setMembers(newData.members.list);
+                if (Array.isArray(newData.members.stages)) setStages(newData.members.stages);
+                if (typeof newData.members.currentStageId === 'string') {
+                  setCurrentStageId(newData.members.currentStageId);
+                }
+              }
+            }
+            if (typeof newData.party_level === 'number') setPartyLevel(newData.party_level);
+            if (typeof newData.party_exp === 'number') setPartyExp(newData.party_exp);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [dbStatus]);
+
   const [attackingHeroIds, setAttackingHeroIds] = useState<string[]>([]);
   const [hitEnemy, setHitEnemy] = useState<boolean>(false);
   const [isBossCounterAttacking, setIsBossCounterAttacking] = useState<boolean>(false);
@@ -164,6 +218,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       partyExp
     }));
 
+    // If this local state change was triggered by a remote realtime event, skip pushing back to Supabase
+    if (isIncomingUpdateRef.current) {
+      isIncomingUpdateRef.current = false;
+      return;
+    }
+
     // Pack members, stages, and currentStageId into one JSONB field to avoid DB schema migrations
     const membersPayload = {
       list: members,
@@ -174,6 +234,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Sync to Supabase Cloud exclusively
     const syncToSupabase = async () => {
       try {
+        const nowStr = new Date().toISOString();
+        lastSyncedRef.current = nowStr;
+
         const { error } = await supabase
           .from('coop_quest_state')
           .upsert({
@@ -182,7 +245,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             members: membersPayload,
             party_level: partyLevel,
             party_exp: partyExp,
-            updated_at: new Date().toISOString()
+            updated_at: nowStr
           });
         if (error) {
           console.warn('Lưu vào Supabase thất bại:', error.message);
