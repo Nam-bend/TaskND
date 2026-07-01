@@ -4,6 +4,8 @@ export type QuestRole = 'gameplay' | 'network' | 'both';
 export interface Stage {
   id: string;
   name: string;
+  startDate?: string;
+  endDate?: string;
   enemyName: string;
   enemyMaxHp: number;
   enemyColor: string;

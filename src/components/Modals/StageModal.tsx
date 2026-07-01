@@ -17,6 +17,8 @@ export const StageModal: React.FC<StageModalProps> = ({ isOpen, onClose }) => {
   const [newEnemyHp, setNewEnemyHp] = useState(100);
   const [newEnemyColor, setNewEnemyColor] = useState('#66bb6a');
   const [newEnemyAvatar, setNewEnemyAvatar] = useState('🍃');
+  const [newStartDate, setNewStartDate] = useState('');
+  const [newEndDate, setNewEndDate] = useState('');
 
   if (!isOpen) return null;
 
@@ -26,6 +28,8 @@ export const StageModal: React.FC<StageModalProps> = ({ isOpen, onClose }) => {
 
     addStage({
       name: newStageName,
+      startDate: newStartDate || undefined,
+      endDate: newEndDate || undefined,
       enemyName: newEnemyName,
       enemyMaxHp: Number(newEnemyHp),
       enemyColor: newEnemyColor,
@@ -33,6 +37,8 @@ export const StageModal: React.FC<StageModalProps> = ({ isOpen, onClose }) => {
     });
 
     setNewStageName('');
+    setNewStartDate('');
+    setNewEndDate('');
     setNewEnemyName('Quái Vật Mới');
     setNewEnemyHp(100);
     setNewEnemyColor('#66bb6a');
@@ -104,6 +110,28 @@ export const StageModal: React.FC<StageModalProps> = ({ isOpen, onClose }) => {
 
                 <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '8px' }}>
                   GIAI ĐOẠN #{index + 1}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Ngày bắt đầu:</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={s.startDate || ''}
+                      onChange={e => handleFieldChange(s.id, 'startDate', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Ngày kết thúc:</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={s.endDate || ''}
+                      onChange={e => handleFieldChange(s.id, 'endDate', e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
@@ -186,6 +214,28 @@ export const StageModal: React.FC<StageModalProps> = ({ isOpen, onClose }) => {
           <form onSubmit={handleAddStage} style={{ borderTop: '2px dashed var(--paper-border)', paddingTop: '20px' }}>
             <h4 style={{ margin: '0 0 12px', fontSize: '15px', color: '#66bb6a' }}>➕ Tạo Giai Đoạn Mới:</h4>
             
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Ngày bắt đầu:</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={newStartDate}
+                  onChange={e => setNewStartDate(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Ngày kết thúc:</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={newEndDate}
+                  onChange={e => setNewEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Tên giai đoạn mới:</label>
