@@ -231,19 +231,19 @@ body {
 
 .rpg-btn:disabled,
 .rpg-btn.settle:disabled {
-  background: #cfd8dc;
-  color: #90a4ae;
-  border-color: #90a4ae;
-  box-shadow: 0 4px 0 #90a4ae;
-  text-shadow: none;
-  cursor: not-allowed;
-  transform: none;
+  background: #cfd8dc !important;
+  color: #90a4ae !important;
+  border-color: #90a4ae !important;
+  box-shadow: 0 4px 0 #90a4ae !important;
+  text-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 .rpg-btn:disabled:hover,
 .rpg-btn.settle:disabled:hover {
-  background: #cfd8dc;
-  transform: none;
-  box-shadow: 0 4px 0 #90a4ae;
+  background: #cfd8dc !important;
+  transform: none !important;
+  box-shadow: 0 4px 0 #90a4ae !important;
 }
 
 /* GAME ARENA (BACKGROUND & STAGE) */
