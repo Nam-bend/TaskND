@@ -424,6 +424,22 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Quyết Đấu / Settle Stage Battle
   const settleWeekBattle = () => {
+    if (members.length === 0) {
+      setBattleMessage({
+        text: `⚠️ Tổ đội đang trống! Hãy thêm ít nhất một Anh Hùng trong mục "Tổ Đội Coop" trước khi tiến hành Quyết Đấu.`,
+        type: 'info'
+      });
+      return;
+    }
+
+    if (currentWeekQuests.length === 0) {
+      setBattleMessage({
+        text: `⚠️ Giai đoạn "${currentStage?.name || 'này'}" chưa có Quest nào! Hãy thêm ít nhất một Quest để bắt đầu trận chiến.`,
+        type: 'info'
+      });
+      return;
+    }
+
     if (enemyHp <= 0 || uncompletedQuests.length === 0) {
       playSound('victory');
       confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });

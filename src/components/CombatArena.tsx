@@ -205,7 +205,8 @@ export const CombatArena: React.FC = () => {
         <button
           className="rpg-btn settle"
           onClick={settleWeekBattle}
-          title="Kiểm tra tiến độ tuần. Nếu 100% Done sẽ thắng, nếu chưa sẽ bị phản công!"
+          disabled={totalCount === 0}
+          title={totalCount === 0 ? "Chưa có Task nào để Quyết Đấu!" : "Kiểm tra tiến độ tuần. Nếu 100% Done sẽ thắng, nếu chưa sẽ bị phản công!"}
         >
           ⏳ Quyết Đấu / Tổng Kết Tuần
         </button>

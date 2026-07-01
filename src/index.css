@@ -229,6 +229,23 @@ body {
   box-shadow: 0 6px 0 #5d1010;
 }
 
+.rpg-btn:disabled,
+.rpg-btn.settle:disabled {
+  background: #cfd8dc;
+  color: #90a4ae;
+  border-color: #90a4ae;
+  box-shadow: 0 4px 0 #90a4ae;
+  text-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+.rpg-btn:disabled:hover,
+.rpg-btn.settle:disabled:hover {
+  background: #cfd8dc;
+  transform: none;
+  box-shadow: 0 4px 0 #90a4ae;
+}
+
 /* GAME ARENA (BACKGROUND & STAGE) */
 .game-arena {
   position: relative;
